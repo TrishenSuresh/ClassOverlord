@@ -121,6 +121,7 @@ public class MySQL
             LinuxProcess proc = new LinuxProcess();
             proc.deleteLab(oldLab);
             proc.makeLab(newLab);
+            proc.applyConfiguration();
             
             
             
@@ -156,6 +157,9 @@ public class MySQL
             return e.toString();
         }
         
+        LinuxProcess proc = new LinuxProcess();
+        proc.applyConfiguration();
+        
         return result;
 
     }
@@ -177,6 +181,7 @@ public class MySQL
             
             LinuxProcess proc = new LinuxProcess();
             proc.makeLab(newLab);
+            proc.applyConfiguration();
  
             
         }

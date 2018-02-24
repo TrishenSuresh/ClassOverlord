@@ -15,8 +15,9 @@
 <%
 
     Boolean isMaster = false;
-    List<String> test = new ArrayList<String>();
-    String test2 = null;
+
+    String dropDownText = "";
+    Boolean dropDown = false;
 
 //    if (session.getAttribute("User") == null) {
 //        response.sendRedirect("login.jsp");
@@ -79,10 +80,11 @@
         Lab newlab = currentLab;
         newlab.initializeAccessList(acl);
         
-        test2 = proc.applyAccessList(newlab, pcIp);
+        dropDownText = proc.applyAccessList(newlab, pcIp);
         
-        currentLab = sql.getLab(ip);
-        currentLab = proc.getLabAccessList(currentLab);
+        dropDown = true;
+        
+        proc.restartSquid();
       
     }
 
@@ -102,10 +104,6 @@
             <div class="row">
                 <p class="h2">Welcome! You're currently in Lab <%= currentLab.getLabNo()%></p>
             </div>
-            <% for(String s : test) { %>
-            <%= s %> <br>
-            <% } %>
-            <%= test2 %>
             <br>
             <div class="row">
                 <table id="computerList" class="table table-striped">
@@ -174,6 +172,23 @@
                 </div>
             </div>
             <% } %>
+            
+            <%-- Drop Down --%>     
+        <% if (dropDown) {%>
+        <div class="modal fade" id="dropDownModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+
+                    <div class="modal-body">
+                        <%= dropDownText%>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary-secondary" data-dismiss="modal">Ok</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% }%>
         </div>
         <script src="thirdparty/jquery/js/jquery-3.3.1.js"></script>
         <script src="thirdparty/bootstrap/js/bootstrap.js"></script>
@@ -181,6 +196,7 @@
         <script>
             $(document).ready(function () {
                 $('#computerList').DataTable();
+                $('#dropDownModal').modal('show');
             });
         </script>
     </body>

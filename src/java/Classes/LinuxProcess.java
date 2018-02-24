@@ -98,23 +98,30 @@ public class LinuxProcess {
 
         try {
 
+            String [] eraseWhiteList = { "bash", "-c", "cat /dev/null > /etc/squid/configurations/"+l.getLabNo()+"/"+ip+"/whitelist"};
+            String [] eraseBlackList = { "bash", "-c", "cat /dev/null > /etc/squid/configurations/"+l.getLabNo()+"/"+ip+"/blacklist"};
             
-            process = Runtime.getRuntime().exec("cat /dev/null > /etc/squid/configurations/"+l.getLabNo()+"/"+ip+"/whitelist "); // for Linux
-            process = Runtime.getRuntime().exec("echo \"test2\" > /etc/squid/configurations/"+l.getLabNo()+"/"+ip+"/whitelist "); // for Linux
+            process = Runtime.getRuntime().exec(eraseWhiteList); 
             process.waitFor();
-            process = Runtime.getRuntime().exec("cat /dev/null > /etc/squid/configurations/" + l.getLabNo() + "/" + ip + "/blacklist"); // for Linux
+            
+            process = Runtime.getRuntime().exec(eraseBlackList); // for Linux
             process.waitFor();
+            
             for (AccessList acl : l.getAccessList()) {
+                
                 if (acl.getIp().equals(ip)) {
+                    
 
                     for (String wl : acl.getWhiteList()) 
                     {
-                        process = Runtime.getRuntime().exec("echo \""+wl+"\" >> /etc/squid/configurations/" + l.getLabNo() + "/" + ip + "/whitelist"); // for Linux
+                        String [] insertWhiteList = { "bash", "-c", "echo \""+wl+"\" >> /etc/squid/configurations/" + l.getLabNo() + "/" + ip + "/whitelist"};
+                        process = Runtime.getRuntime().exec(insertWhiteList); 
                     }
                     
                     for(String bl : acl.getBlackList())
                     {
-                        process = Runtime.getRuntime().exec("echo \""+bl+"\" >> /etc/squid/configurations/" + l.getLabNo() + "/" + ip + "/blacklist"); // for Linux
+                        String [] insertBlackList = { "bash", "-c", "echo \""+bl+"\" >> /etc/squid/configurations/" + l.getLabNo() + "/" + ip + "/blacklist"};
+                        process = Runtime.getRuntime().exec(insertBlackList); 
                     }
 
                     break;

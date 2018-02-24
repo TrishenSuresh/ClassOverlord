@@ -56,34 +56,34 @@
     
     if(request.getParameter("saveChanges") != null)
     {
-//        List<String> whiteListSplit = new ArrayList<String>();
-//        List<String> blackListSplit = new ArrayList<String>();
-//        String pcIp = request.getParameter("saveChanges");
-//        String whiteList = request.getParameter("whitelist");
-//        String blackList = request.getParameter("blacklist");
-//
-//        if(whiteList.length() > 0 )
-//        {
-//           String[] whiteListArray = whiteList.split("\\s+");
-//           whiteListSplit = Arrays.asList(whiteListArray);
-//        }
-//       
-//        if(blackList.length() > 0)
-//        {
-//            blackListSplit = Arrays.asList(blackList.split("\\s+"));
-//        }
-//        
-//        List<AccessList> acl = new ArrayList<AccessList>();
-//        acl.add(new AccessList(pcIp, whiteListSplit, blackListSplit));
-//        
-//        Lab newlab = currentLab;
-//        newlab.initializeAccessList(acl);
-//        
-//        test2 = proc.applyAccessList(newlab, pcIp);
-//
-//        currentLab = proc.getLabAccessList(currentLab);
-        
+        List<String> whiteListSplit = new ArrayList<String>();
+        List<String> blackListSplit = new ArrayList<String>();
+        String pcIp = request.getParameter("saveChanges");
+        String whiteList = request.getParameter("whitelist");
+        String blackList = request.getParameter("blacklist");
+
+        if(whiteList.length() > 0 )
+        {
+           String[] whiteListArray = whiteList.split("\\s+");
+           whiteListSplit = Arrays.asList(whiteListArray);
+        }
        
+        if(blackList.length() > 0)
+        {
+            blackListSplit = Arrays.asList(blackList.split("\\s+"));
+        }
+        
+        List<AccessList> acl = new ArrayList<AccessList>();
+        acl.add(new AccessList(pcIp, whiteListSplit, blackListSplit));
+        
+        Lab newlab = currentLab;
+        newlab.initializeAccessList(acl);
+        
+        test2 = proc.applyAccessList(newlab, pcIp);
+        
+        currentLab = sql.getLab(ip);
+        currentLab = proc.getLabAccessList(currentLab);
+      
     }
 
 %>
@@ -156,12 +156,12 @@
 
                                 <div class="form-group">
                                     <label for="whitelist">Whitelist</label>
-                                    <textarea name="whitelist" class="form-control" id="whitelist" rows="3"><%for(String wl : acl.getWhiteList()){%><%= wl %><%}%></textarea>
+                                    <textarea name="whitelist" class="form-control" id="whitelist" rows="3"><%for(String wl : acl.getWhiteList()){%><%= wl %>&#13;&#10;<%}%></textarea>
                                 </div>
                                 
                                 <div class="form-group">
                                     <label for="blacklist">Blacklist</label>
-                                    <textarea name="blacklist" class="form-control" id="blacklist" rows="3"><%for(String bl : acl.getBlackList()){%><%= bl %><%}%></textarea>
+                                    <textarea name="blacklist" class="form-control" id="blacklist" rows="3"><%for(String bl : acl.getBlackList()){%><%= bl %>&#13;&#10;<%}%></textarea>
                                 </div>
 
                             </div>

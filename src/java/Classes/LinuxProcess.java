@@ -56,6 +56,7 @@ public class LinuxProcess {
 
             List<String> whiteList = new ArrayList<String>();
             List<String> blackList = new ArrayList<String>();
+            Boolean isAllowed = true;
 
             try {
                 //WhiteList
@@ -79,6 +80,9 @@ public class LinuxProcess {
                 while ((line = reader.readLine()) != null) {
                     blackList.add(line);
                 }
+                
+                //Deny Access
+                
 
                 accessList.add(new AccessList(ip, whiteList, blackList));
 

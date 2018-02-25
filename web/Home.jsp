@@ -18,6 +18,8 @@
 
     String dropDownText = "";
     Boolean dropDown = false;
+    
+    String test = null;
 
 //    if (session.getAttribute("User") == null) {
 //        response.sendRedirect("login.jsp");
@@ -51,37 +53,52 @@
         response.sendRedirect("notMaster.jsp");
         return;
     }
-
+    
     LinuxProcess proc = new LinuxProcess();
     currentLab = proc.getLabAccessList(currentLab);
-
-    if (request.getParameter("saveChanges") != null) {
+    
+    if(request.getParameter("saveChanges") != null)
+    {
+        
+        
         List<String> whiteListSplit = new ArrayList<String>();
         List<String> blackListSplit = new ArrayList<String>();
         String pcIp = request.getParameter("saveChanges");
         String whiteList = request.getParameter("whitelist");
         String blackList = request.getParameter("blacklist");
-
-        if (whiteList.length() > 0) {
-            String[] whiteListArray = whiteList.split("\\s+");
-            whiteListSplit = Arrays.asList(whiteListArray);
+        Boolean isAllowed = true;
+        
+        if(request.getParameter("denyAccess") != null)
+        {
+            isAllowed = false;
         }
 
-        if (blackList.length() > 0) {
+        if(whiteList.length() > 0 )
+        {
+           String[] whiteListArray = whiteList.split("\\s+");
+           whiteListSplit = Arrays.asList(whiteListArray);
+        }
+       
+        if(blackList.length() > 0)
+        {
             blackListSplit = Arrays.asList(blackList.split("\\s+"));
         }
-
+        
         List<AccessList> acl = new ArrayList<AccessList>();
-        acl.add(new AccessList(pcIp, whiteListSplit, blackListSplit));
-
+        acl.add(new AccessList(pcIp, whiteListSplit, blackListSplit,isAllowed));
+        
         Lab newlab = currentLab;
         newlab.initializeAccessList(acl);
-
+        
         dropDownText = proc.applyAccessList(newlab, pcIp);
-
+        
         dropDown = true;
-
+        
+        currentLab = proc.getLabAccessList(currentLab);
+        
         proc.restartSquid();
+        
+        
 
     }
 
@@ -136,37 +153,43 @@
                     </tbody>
                 </table>
             </div>
-                    
-            <% for (AccessList acl : currentLab.getAccessList()) 
-               {
-                   String replacedIP = acl.getIp().replace(".", "");
-            %>        
+            <% for(AccessList acl : currentLab.getAccessList()) { %>        
             <div class="modal fade" id="edit<%=acl.getIp()%>" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLongTitle">Editing <%= acl.getIp()%></h5>
+                            <h5 class="modal-title" id="exampleModalLongTitle">Editing <%= acl.getIp() %></h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                        <form>
+                            <form method="post">
                             <div class="modal-body">
 
                                 <div class="form-group">
                                     <label for="whitelist">Whitelist</label>
-                                    <textarea name="whitelist" class="form-control" id="whitelist<%= replacedIP %>" rows="3"><%for (String wl : acl.getWhiteList()) {%><%= wl%>&#13;&#10;<%}%></textarea>
+                                    <textarea name="whitelist" class="form-control" id="whitelist" rows="3"><%for(String wl : acl.getWhiteList()){%><%= wl %>&#13;&#10;<%}%></textarea>
                                 </div>
-
+                                
                                 <div class="form-group">
                                     <label for="blacklist">Blacklist</label>
-                                    <textarea name="blacklist" class="form-control" id="blacklist<%= replacedIP%>" rows="3"><%for (String bl : acl.getBlackList()) {%><%= bl%>&#13;&#10;<%}%></textarea>
+                                    <textarea name="blacklist" class="form-control" id="blacklist" rows="3"><%for(String bl : acl.getBlackList()){%><%= bl %>&#13;&#10;<%}%></textarea>
                                 </div>
+                                
+                                <% if(acl.isIsAllowed()) { %>
                                 <div class="btn-group-toggle" data-toggle="buttons">
-                                    <label name="allowAccess" value="<%= replacedIP %>" id="allowAccess" class="btn btn-outline-success float-right"><input type="checkbox" checked autocomplete="off">Allowing Access</label>
+                                    <label class="btn btn-outline-danger btn-block">
+                                        <input name="denyAccess" value="denyAccess" type="checkbox"  autocomplete="off"> Deny Access
+                                    </label>
                                 </div>
+                                <% } else { %>
+                                <div class="btn-group-toggle" data-toggle="buttons">
+                                    <label class="btn btn-outline-danger btn-block active">
+                                        <input name="denyAccess" value="denyAccess" type="checkbox" checked autocomplete="off"> Deny Access
+                                    </label>
+                                </div>
+                                <% } %>
                             </div>
-
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
                                 <button name="saveChanges" value="<%= acl.getIp() %>" type="submit" class="btn btn-outline-primary">Save changes</button>
@@ -176,23 +199,23 @@
                 </div>
             </div>
             <% } %>
-
+            
             <%-- Drop Down --%>     
-            <% if (dropDown) {%>
-            <div class="modal fade" id="dropDownModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
+        <% if (dropDown) {%>
+        <div class="modal fade" id="dropDownModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
 
-                        <div class="modal-body">
-                            <%= dropDownText%>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Ok</button>
-                        </div>
+                    <div class="modal-body">
+                        <%= dropDownText%>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary-secondary" data-dismiss="modal">Ok</button>
                     </div>
                 </div>
             </div>
-            <% }%>
+        </div>
+        <% }%>
         </div>
         <script src="thirdparty/jquery/js/jquery-3.3.1.js"></script>
         <script src="thirdparty/bootstrap/js/bootstrap.js"></script>
@@ -201,36 +224,6 @@
             $(document).ready(function () {
                 $('#computerList').DataTable();
                 $('#dropDownModal').modal('show');
-                
-                $('[id="allowAccess"]').click(function (e) {
-                    $(this).toggleClass('btn-outline-danger');
-                    $(this).toggleClass('btn-outline-success');
-                    var text = $(this).text();
-                    
-                    if(text == "Allowing Access")
-                    {
-                        $(this).text("Denying Access")
-                        var buttonValue = $(this).attr('value');
-
-                        var blacklist = $('#blacklist'+buttonValue);
-                        var whitelist = $('#whitelist'+buttonValue)
-                        
-                        blacklist.prop('readonly',true); 
-                        whitelist.prop('readonly',false);
-                    }
-                    else
-                    {
-                        $(this).text("Allowing Access");
-                        
-                        var buttonValue = $(this).attr('value');
-
-                        var blacklist = $('#blacklist'+buttonValue);
-                        var whitelist = $('#whitelist'+buttonValue)
-                        
-                        blacklist.prop('readonly',false); 
-                        whitelist.prop('readonly',true); 
-                    }
-                });
             });
         </script>
     </body>

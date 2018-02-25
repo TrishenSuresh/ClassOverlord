@@ -51,12 +51,13 @@ public class LinuxProcess {
         SubnetUtils utils = new SubnetUtils(lab.getSubnet());
         String[] allIps = utils.getInfo().getAllAddresses();
         List<AccessList> accessList = new ArrayList<AccessList>();
+        List<String> denyFile = readDenyFile();
 
         for (String ip : allIps) {
 
             List<String> whiteList = new ArrayList<String>();
             List<String> blackList = new ArrayList<String>();
-            Boolean isAllowed = true;
+            boolean isAllowed = true;
 
             try {
                 //WhiteList
@@ -80,11 +81,16 @@ public class LinuxProcess {
                 while ((line = reader.readLine()) != null) {
                     blackList.add(line);
                 }
-                
-                //Deny Access
-                
 
-                accessList.add(new AccessList(ip, whiteList, blackList));
+                //Deny File
+                for (String s : denyFile) {
+                    if (s.equals(ip)) {
+                        isAllowed = false;
+                        break;
+                    }
+                }
+
+                accessList.add(new AccessList(ip, whiteList, blackList, isAllowed));
 
             } catch (Exception e) {
                 System.out.println(e);
@@ -98,6 +104,7 @@ public class LinuxProcess {
 
     public String applyAccessList(Lab l, String ip) {
         String result = "Access List Saved";
+        AccessList AccessL = null;
 
         try {
 
@@ -109,24 +116,74 @@ public class LinuxProcess {
 
             process = Runtime.getRuntime().exec(eraseBlackList); // for Linux
             process.waitFor();
+            
+            for(AccessList al : l.getAccessList())
+            {
+                if(al.getIp().equals(ip))
+                {
+                    AccessL = al;
+                    break;
+                }
+            }
 
-            for (AccessList acl : l.getAccessList()) {
+                if (AccessL.getIp().equals(ip)) 
+                {
 
-                if (acl.getIp().equals(ip)) {
-
-                    for (String wl : acl.getWhiteList()) {
+                    for (String wl : AccessL.getWhiteList()) 
+                    {
                         String[] insertWhiteList = {"bash", "-c", "echo \"" + wl + "\" >> /etc/squid/configurations/" + l.getLabNo() + "/" + ip + "/whitelist"};
                         process = Runtime.getRuntime().exec(insertWhiteList);
                     }
 
-                    for (String bl : acl.getBlackList()) {
+                    for (String bl : AccessL.getBlackList()) 
+                    {
                         String[] insertBlackList = {"bash", "-c", "echo \"" + bl + "\" >> /etc/squid/configurations/" + l.getLabNo() + "/" + ip + "/blacklist"};
                         process = Runtime.getRuntime().exec(insertBlackList);
                     }
-
-                    break;
+                    
+                    List<String> denyFile = readDenyFile();
+                    
+                    if(AccessL.isIsAllowed())
+                    {
+                        for (int i = 0; i < denyFile.size(); i++) 
+                        {
+                            if (denyFile.get(i).equals(AccessL.getIp())) 
+                            {
+                                denyFile.remove(i);
+                            }
+                        }
+                    }
+                    
+                    Boolean found = false;
+                    
+                    if(!AccessL.isIsAllowed())
+                    {
+                        if(denyFile.size() > 0)
+                        {
+                            for (int i = 0; i < denyFile.size(); i++) 
+                            {
+                                if (denyFile.get(i).equals(AccessL.getIp())) 
+                                {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            
+                            if(!found)
+                            {        
+                                denyFile.add(AccessL.getIp());
+                            }
+                        }
+                        else
+                        {
+                            denyFile.add(AccessL.getIp());
+                        }
+                        
+                    }
+                    
+                    writeDenyFile(denyFile);
                 }
-            }
+            
 
         } catch (Exception e) {
             return e.getMessage();
@@ -150,13 +207,7 @@ public class LinuxProcess {
             int blockingStartLine = 0;
 
             //read config file
-            process = Runtime.getRuntime().exec("cat /etc/squid/squid.conf.default");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-
-            while ((line = reader.readLine()) != null) {
-                configFile.add(line);
-            }
+            configFile = readDefaultConfigFile();
 
             //Locate the starting source point
             for (int counter = 0; counter < configFile.size(); counter++) //Source Location
@@ -245,17 +296,89 @@ public class LinuxProcess {
         return null;
     }
 
-    public void restartSquid() 
-    {
+    public void restartSquid() {
         try {
             String[] cmd = {"/bin/bash", "-c", "echo momo960406| sudo -S systemctl restart squid"};
             process = Runtime.getRuntime().exec(cmd);
+        } catch (Exception e) {
+
+        }
+
+    }
+
+    public List<String> readConfigFile() {
+        List<String> configFile = new ArrayList<String>();
+
+        try {
+            process = Runtime.getRuntime().exec("cat /etc/squid/squid.conf");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                configFile.add(line);
+            }
+        } catch (Exception e) {
+
+        }
+
+        return configFile;
+    }
+
+    public List<String> readDefaultConfigFile() {
+        List<String> configFile = new ArrayList<String>();
+
+        try {
+            process = Runtime.getRuntime().exec("cat /etc/squid/squid.conf.default");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                configFile.add(line);
+            }
+        } catch (Exception e) {
+
+        }
+
+        return configFile;
+    }
+
+    public List<String> readDenyFile() {
+        List<String> denyFile = new ArrayList<String>();
+
+        try {
+            process = Runtime.getRuntime().exec("cat /etc/squid/configurations/deny_access");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                denyFile.add(line);
+            }
+        } catch (Exception e) {
+
+        }
+
+        return denyFile;
+    }
+    
+    public void writeDenyFile(List<String> denyFile)
+    {
+        try
+        {
+            
+            String[] eraseDenyFile = {"bash", "-c", "cat /dev/null > /etc/squid/configurations/deny_access"};
+            process = Runtime.getRuntime().exec(eraseDenyFile);
+            
+            for (String s : denyFile) {
+                String[] insertDenyList = {"bash", "-c", "echo \"" + s + "\" >> /etc/squid/configurations/deny_access"};
+                process = Runtime.getRuntime().exec(insertDenyList);
+                process.waitFor();
+            }
         }
         catch(Exception e)
         {
             
         }
-
+        
     }
 
 }

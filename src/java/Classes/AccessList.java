@@ -16,21 +16,13 @@ public class AccessList
     private String ip;
     private List<String> whiteList;
     private List<String> blackList;
-    private Boolean allowAccess;
+    private boolean isAllowed;
 
-    public AccessList(String ip, List<String> whiteList, List<String> blackList) {
+    public AccessList(String ip, List<String> whiteList, List<String> blackList, boolean isAllowed) {
         this.ip = ip;
         this.whiteList = whiteList;
         this.blackList = blackList;
-    }
-    
-    
-
-    public AccessList(String ip, List<String> whiteList, List<String> blackList, Boolean allowAccess) {
-        this.ip = ip;
-        this.whiteList = whiteList;
-        this.blackList = blackList;
-        this.allowAccess = allowAccess;
+        this.isAllowed = isAllowed;
     }
 
     public String getIp() {
@@ -57,12 +49,12 @@ public class AccessList
         this.blackList = blackList;
     }
 
-    public Boolean getAllowAccess() {
-        return allowAccess;
+    public boolean isIsAllowed() {
+        return isAllowed;
     }
 
-    public void setAllowAccess(Boolean allowAccess) {
-        this.allowAccess = allowAccess;
+    public void setIsAllowed(boolean isAllowed) {
+        this.isAllowed = isAllowed;
     }
     
     

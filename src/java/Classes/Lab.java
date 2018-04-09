@@ -17,11 +17,13 @@ public class Lab
     private String subnet;
     private String masterIp;
     private List<AccessList> accessList;
+    private boolean Blocked;
 
-    public Lab(String labNo, String subnet, String masterIp) {
+    public Lab(String labNo, String subnet, String masterIp, boolean blocked) {
         this.labNo = labNo;
         this.subnet = subnet;
         this.masterIp = masterIp;
+        this.Blocked = blocked;
     }
     
     public void initializeAccessList(List<AccessList> accessList)
@@ -57,6 +59,18 @@ public class Lab
     {
         return accessList;
     }
+
+    public boolean isBlocked() 
+    {
+        return Blocked;
+    }
+
+    public void setBlocked(boolean isBlocked) 
+    {
+        this.Blocked = isBlocked;
+    }
+    
+    
     
     
     

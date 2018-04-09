@@ -33,7 +33,7 @@
         String labNo = request.getParameter("labNo");
         String subnet = request.getParameter("subnet");
         String masterIp = request.getParameter("masterIp");
-        Lab newLab = new Lab(labNo, subnet, masterIp);
+        Lab newLab = new Lab(labNo, subnet, masterIp,false);
 
         dropDownText = sql.editLab(newLab, oldLab);
         dropDown = true;
@@ -64,7 +64,7 @@
         String subnet = request.getParameter("subnet");
         String masterIp = request.getParameter("masterIp");
 
-        Lab newLab = new Lab(labNo, subnet, masterIp);
+        Lab newLab = new Lab(labNo, subnet, masterIp,false);
 
         dropDownText = sql.addLab(newLab);
         dropDown = true;

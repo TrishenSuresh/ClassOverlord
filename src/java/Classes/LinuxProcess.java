@@ -224,6 +224,8 @@ public class LinuxProcess {
             for (Lab l : allLabs) {
                 l = getLabAccessList(l);
             }
+            
+            configFile.add("acl denyAccess dstdomain \\\"/etc/squid/configurations/deny_access\\\"");
 
             //source
             for (Lab l : allLabs) {
@@ -298,7 +300,7 @@ public class LinuxProcess {
 
     public void restartSquid() {
         try {
-            String[] cmd = {"/bin/bash", "-c", "echo momo960406| sudo -S systemctl restart squid"};
+            String[] cmd = {"bash", "-c", "echo momo960406| sudo -S systemctl restart squid"};
             process = Runtime.getRuntime().exec(cmd);
         } catch (Exception e) {
 
@@ -379,6 +381,36 @@ public class LinuxProcess {
             
         }
         
+    }
+    
+    public void removeBlock(Lab l)
+    {
+        SubnetUtils utils = new SubnetUtils(l.getSubnet());
+        String[] allIps = utils.getInfo().getAllAddresses();
+        
+        List<String> denyFile = readDenyFile();
+        
+        for(String s: allIps)
+        {
+            denyFile.remove(s);
+        }
+        
+        writeDenyFile(denyFile);
+    }
+    
+    public void addBlock(Lab l)
+    {
+        SubnetUtils utils = new SubnetUtils(l.getSubnet());
+        String[] allIps = utils.getInfo().getAllAddresses();
+        
+        List<String> denyFile = readDenyFile();
+        
+        for(String s: allIps)
+        {
+            denyFile.add(s);
+        }
+        
+        writeDenyFile(denyFile);
     }
 
 }

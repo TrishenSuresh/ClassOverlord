@@ -26,7 +26,6 @@ public class MySQL
     {
         Class.forName("com.mysql.jdbc.Driver");
         connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/classoverlord","root", "1234");
-
     }
    
     
@@ -75,8 +74,9 @@ public class MySQL
             String labNo = rs.getString("labNo");
             String subnet = rs.getString("subnet");
             String masterIp = rs.getString("masterIp");
+            boolean blocked = rs.getBoolean("isBlocked");
             
-            Lab currentLab = new Lab(labNo, subnet, masterIp);
+            Lab currentLab = new Lab(labNo, subnet, masterIp,blocked);
             
             return currentLab;
         }
@@ -96,7 +96,7 @@ public class MySQL
         
         while(rs.next())
         {
-            allLabs.add(new Lab(rs.getString("labNo"), rs.getString("subnet"), rs.getString("masterIp")));
+            allLabs.add(new Lab(rs.getString("labNo"), rs.getString("subnet"), rs.getString("masterIp"),rs.getBoolean("isBlocked")));
         }
         
         return allLabs;
@@ -138,7 +138,7 @@ public class MySQL
     public String deletelab(Lab selectedLab)
     {
         String result = "Succesfully Deleted";
-        System.out.println("test");
+        
         try
         {
             String delete = "DELETE FROM labs WHERE labNo= ?";
@@ -170,12 +170,13 @@ public class MySQL
         
         try
         {
-            String insert = "INSERT INTO labs (labNo, subnet, masterIp) VALUES (?, ?, ?)";
+            String insert = "INSERT INTO labs (labNo, subnet, masterIp, isBlocked) VALUES (?, ?, ?, ?)";
             PreparedStatement st = connection.prepareStatement(insert);
             
             st.setString(1, newLab.getLabNo());
             st.setString(2, newLab.getSubnet());
             st.setString(3, newLab.getMasterIp());
+            st.setBoolean(4, false);
             
             st.executeUpdate();
             
@@ -192,6 +193,34 @@ public class MySQL
         
         return result;
     }
+    
+    public void toggleBlock(Lab l)
+    {
+        boolean isBlocked = false;
+        
+        try
+        {
+            if(!l.isBlocked())  
+            {
+                isBlocked = true;
+            }
+            
+            String insert = "UPDATE labs SET isBlocked = ? WHERE labNo = ?";
+            PreparedStatement st = connection.prepareStatement(insert);
+            
+            st.setBoolean(1, isBlocked);
+            st.setString(2, l.getLabNo());
+            
+            st.executeUpdate();
+            
+        }
+        catch(Exception e)
+        {
+         
+        }
+        
+        
+    }
 
     public String test()
     {
@@ -204,8 +233,6 @@ public class MySQL
             rs.next();
             
             return rs.getString(1);
-
-
         }
         catch(Exception e)
         {

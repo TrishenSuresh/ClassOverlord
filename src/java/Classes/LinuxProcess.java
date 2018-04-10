@@ -225,7 +225,9 @@ public class LinuxProcess {
                 l = getLabAccessList(l);
             }
             
-            configFile.add("acl denyAccess dstdomain \\\"/etc/squid/configurations/deny_access\\\"");
+            
+            configFile.add(1,"acl blockAccess src \\\"/etc/squid/configurations/deny_access\\\"");
+            configFile.add(2,"http_access deny blockAccess");
 
             //source
             for (Lab l : allLabs) {

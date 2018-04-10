@@ -7,8 +7,6 @@
 <%@page import="Classes.User"%>
 <%@page import="Classes.MySQL"%>
 <%
-
-    String test = "nothing";
     MySQL sql = new MySQL();
     String stickyEmail = "";
     Boolean loginAlert = false;
@@ -85,7 +83,6 @@
                 <div class="col-sm"></div>
             </div>
         </div>
-        <%= test%>
         <script src="thirdparty/jquery/js/jquery-3.3.1.js"></script>
         <script src="thirdparty/bootstrap/js/bootstrap.js"></script>
     </body>

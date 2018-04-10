@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import static java.lang.System.out;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.commons.net.util.SubnetUtils;
 
 /**
@@ -227,7 +228,6 @@ public class LinuxProcess {
             
             
             configFile.add(1,"acl blockAccess src \\\"/etc/squid/configurations/deny_access\\\"");
-            configFile.add(2,"http_access deny blockAccess");
 
             //source
             for (Lab l : allLabs) {
@@ -369,6 +369,8 @@ public class LinuxProcess {
         try
         {
             
+            denyFile = denyFile.stream().distinct().collect(Collectors.toList());
+            
             String[] eraseDenyFile = {"bash", "-c", "cat /dev/null > /etc/squid/configurations/deny_access"};
             process = Runtime.getRuntime().exec(eraseDenyFile);
             
@@ -414,5 +416,6 @@ public class LinuxProcess {
         
         writeDenyFile(denyFile);
     }
+    
 
 }

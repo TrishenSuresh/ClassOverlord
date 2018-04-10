@@ -94,10 +94,34 @@
         
         dropDown = true;
         
+        Thread.sleep(3000);
+        
+        currentLab = sql.getLab(ip);
         currentLab = proc.getLabAccessList(currentLab);
         
         proc.restartSquid();
         
+    }
+    
+    if(request.getParameter("toggleAll") != null)
+    {
+        String toggleType = request.getParameter("toggleAll");
+        
+        if(toggleType.equalsIgnoreCase("deny"))
+        {
+            proc.addBlock(currentLab);
+            sql.toggleBlock(currentLab);
+        }
+        else if(toggleType.equalsIgnoreCase("allow"))
+        {
+            proc.removeBlock(currentLab);
+            sql.toggleBlock(currentLab);
+        }
+        
+        currentLab = sql.getLab(ip);
+        currentLab = proc.getLabAccessList(currentLab);
+        
+        proc.restartSquid();
     }
 
     
@@ -114,8 +138,22 @@
         <link rel="stylesheet" type="text/css" href="thirdparty/DataTables/datatables.css"/>
         <jsp:include page="nav.jsp" />
         <div class="container">
+            <br>
             <div class="row">
-                <p class="h2">Welcome! You're currently in Lab <%= currentLab.getLabNo()%></p>
+                <div class="col">
+                <p class="h2 text-center">Welcome! You're currently in Lab <%= currentLab.getLabNo()%></p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <form>
+                    <% if(currentLab.isBlocked()) {  %>
+                    <button type="submit" name="toggleAll" value="allow" class="btn btn-outline-danger float-right"><i class="fas fa-power-off"></i> Denying Access</button>
+                    <% } else { %>
+                    <button type="submit" name="toggleAll" value="deny" class="btn btn-outline-success float-right"><i class="fas fa-power-off"></i> Allowing Access</button>
+                    <% } %>
+                    </form>
+                </div>    
             </div>
             <br>
             <div class="row">
